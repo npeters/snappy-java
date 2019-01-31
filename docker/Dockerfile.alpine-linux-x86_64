@@ -1,0 +1,6 @@
+FROM openjdk:8u181-jdk-alpine3.8
+MAINTAINER Taro L. Saito <leo@xerial.org>
+
+RUN apk add g++ cmake make curl bash gcc git perl
+
+WORKDIR /work

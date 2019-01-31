@@ -183,6 +183,9 @@ linux32: jni-header
 linux64: jni-header
 	docker run $(DOCKER_RUN_OPTS) -ti -v $$PWD:/work xerial/centos5-linux-x86_64-pic bash -c 'make clean-native native-nocmake OS_NAME=Linux OS_ARCH=x86_64'
 
+alpine64: jni-header
+	docker run $(DOCKER_RUN_OPTS) -ti -v $$PWD:/work  npeters75/alpine-linux-x86_64 bash -c 'make clean-native native-nocmake OS_NAME=AlpineLinux OS_ARCH=x86_64'
+
 freebsd64:
 	$(MAKE) native OS_NAME=FreeBSD OS_ARCH=x86_64
 
