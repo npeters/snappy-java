@@ -96,12 +96,11 @@ public class OSInfo {
     }
 
     public static void main(String[] args) {
-        if(args.length >= 1) {
-            if("--os".equals(args[0])) {
+        if (args.length >= 1) {
+            if ("--os".equals(args[0])) {
                 System.out.print(getOSName());
                 return;
-            }
-            else if("--arch".equals(args[0])) {
+            } else if ("--arch".equals(args[0])) {
                 System.out.print(getArchName());
                 return;
             }
@@ -118,7 +117,6 @@ public class OSInfo {
         return translateOSNameToFolderName(System.getProperty("os.name"));
     }
 
-
     public static boolean isAndroid() {
         return System.getProperty("java.runtime.name", "").toLowerCase().contains("android");
     }
@@ -133,32 +131,30 @@ public class OSInfo {
                 int readLen = 0;
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
                 byte[] buf = new byte[32];
-                while((readLen = in.read(buf, 0, buf.length)) >= 0) {
+                while ((readLen = in.read(buf, 0, buf.length)) >= 0) {
                     b.write(buf, 0, readLen);
                 }
                 return b.toString();
-            }
-            finally {
-                if(in != null) {
+            } finally {
+                if (in != null) {
                     in.close();
                 }
             }
-        }
-        catch(Throwable e) {
+        } catch (Throwable e) {
             System.err.println("Error while running uname -m: " + e.getMessage());
             return "unknown";
         }
     }
 
     static String resolveArmArchType() {
-        if(System.getProperty("os.name").contains("Linux")) {
+        if (System.getProperty("os.name").contains("Linux")) {
             String armType = getHardwareName();
-            // armType (uname -m) can be armv5t, armv5te, armv5tej, armv5tejl, armv6, armv7, armv7l, i686
-            if(armType.startsWith("armv6")) {
+            // armType (uname -m) can be armv5t, armv5te, armv5tej, armv5tejl, armv6, armv7,
+            // armv7l, i686
+            if (armType.startsWith("armv6")) {
                 // Raspberry PI
                 return "armv6";
-            }
-            else if(armType.startsWith("armv7")) {
+            } else if (armType.startsWith("armv7")) {
                 // Generic
                 return "armv7";
             }
@@ -166,7 +162,7 @@ public class OSInfo {
             // Java 1.8 introduces a system property to determine armel or armhf
             // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8005545
             String abi = System.getProperty("sun.arch.abi");
-            if(abi != null && abi.startsWith("gnueabihf")) {
+            if (abi != null && abi.startsWith("gnueabihf")) {
                 return "armv7";
             }
 
@@ -174,25 +170,22 @@ public class OSInfo {
             try {
                 // determine if first JVM found uses ARM hard-float ABI
                 int exitCode = Runtime.getRuntime().exec("which readelf").waitFor();
-                if(exitCode == 0) {
+                if (exitCode == 0) {
                     String javaHome = System.getProperty("java.home");
-                    String[] cmdarray = {"/bin/sh", "-c", "find '" + javaHome +
-                        "' -name 'libjvm.so' | head -1 | xargs readelf -A | " +
-                        "grep 'Tag_ABI_VFP_args: VFP registers'"};
+                    String[] cmdarray = { "/bin/sh", "-c",
+                            "find '" + javaHome + "' -name 'libjvm.so' | head -1 | xargs readelf -A | "
+                                    + "grep 'Tag_ABI_VFP_args: VFP registers'" };
                     exitCode = Runtime.getRuntime().exec(cmdarray).waitFor();
-                    if(exitCode == 0) {
+                    if (exitCode == 0) {
                         return "armv7";
                     }
+                } else {
+                    System.err.println("WARNING! readelf not found. Cannot check if running on an armhf system, "
+                            + "armel architecture will be presumed.");
                 }
-                else {
-                    System.err.println("WARNING! readelf not found. Cannot check if running on an armhf system, " +
-                        "armel architecture will be presumed.");
-                }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 // ignored: fall back to "arm" arch (soft-float ABI)
-            }
-            catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 // ignored: fall back to "arm" arch (soft-float ABI)
             }
         }
@@ -203,35 +196,35 @@ public class OSInfo {
     public static String getArchName() {
         String osArch = System.getProperty("os.arch");
         // For Android
-        if(isAndroid()) {
+        if (isAndroid()) {
             return "android-arm";
         }
 
-        if(osArch.startsWith("arm")) {
+        if (osArch.startsWith("arm")) {
             osArch = resolveArmArchType();
-        }
-        else {
+        } else {
             String lc = osArch.toLowerCase(Locale.US);
-            if(archMapping.containsKey(lc))
+            if (archMapping.containsKey(lc))
                 return archMapping.get(lc);
         }
         return translateArchNameToFolderName(osArch);
     }
 
     static String translateOSNameToFolderName(String osName) {
-        if(osName.contains("Windows")) {
+        if (osName.contains("Windows")) {
             return "Windows";
-        }
-        else if(osName.contains("Mac")) {
+        } else if (osName.contains("Mac")) {
             return "Mac";
-        }
-        else if(osName.contains("Linux")) {
-            return "Linux";
-        }
-        else if(osName.contains("AIX")) {
+        } else if (osName.contains("Linux")) {
+            if (new java.io.File("/etc/alpine-release").exists()) {
+                return "AlpineLinux";
+            } else {
+                return "Linux";
+            }
+
+        } else if (osName.contains("AIX")) {
             return "AIX";
-        }
-        else {
+        } else {
             return osName.replaceAll("\\W", "");
         }
     }
